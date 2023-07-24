@@ -19,18 +19,22 @@ function DeveloperList({ developers, onDeveloperClick }) {
 					{developers.map((developer) => (
 						<ListItem
 							button
-							key={developer.id}
+							key={developer.login}
 							onClick={() => onDeveloperClick(developer)}
 						>
 							<ListItemAvatar>
 								<Avatar
-									alt={`${developer.name} ${developer.surname}`}
-									src={developer.avatarUrl}
+									alt={`${developer.login}`}
+									src={developer.avatar_url}
 								/>
 							</ListItemAvatar>
 							<ListItemText
-								primary={`${developer.name} ${developer.surname}`}
-								secondary={`Estimated Country: ${developer.nationality}`}
+								primary={`${developer.login}` || 'N/A'}
+								secondary={
+									`Estimated Country: ${
+										developer.nationality || 'N/A'
+									}` || 'N/A'
+								}
 							/>
 						</ListItem>
 					))}

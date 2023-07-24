@@ -3,14 +3,44 @@
 	text-align: center;
 }
 
-.input-section {
-	margin-top: 16px;
-}
-
-.info-section {
+.input-section,
+.developer-card,
+.info-section,
+.error {
 	margin-top: 24px;
 }
 
-.developer-card {
+.input-section .MuiButton-root,
+.input-section .MuiInputBase-root {
+	height: 56px;
+}
+
+.dev-predict-result {
 	margin-top: 16px;
+	margin-bottom: 32px;
+}
+
+/* Sticky header */
+.appBar {
+	position: sticky;
+	height: 200px;
+}
+
+.toolbar {
+	display: flex;
+	justify-content: center;
+}
+
+.card-predict-result {
+	display: flex;
+	justify-content: space-between;
+}
+
+.logo {
+	height: 70%;
+	margin-right: 10px;
+}
+
+.text {
+	align-self: left;
 }
