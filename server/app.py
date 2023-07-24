@@ -22,7 +22,7 @@ def getRepoInfo(owner, repo):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         data = response.json()
-        
+        print('QUI 1', jsonify(data))
         return jsonify(data)
     except requests.exceptions.RequestException as e:
         # If an error occurs during the request, extract the error message and code
@@ -78,6 +78,7 @@ def getRepoContributors(owner, repo):
                 contributors.append(user)
 
                 # MODULO CV
+                # Search CV in contributor's portfolio
                 url = user['blog']
                 if(url != ''):
                     if not (url.startswith("http://") or url.startswith("https://")):
@@ -88,7 +89,12 @@ def getRepoContributors(owner, repo):
 
                     if pdfs is not None and len(pdfs) > 0:
                         user['pdfs'] = pdfs
-                        print(pdfs)
+
+                # MODULO COMMIT
+                # Search 10 commits of contributor
+                commits = getCommits(user['login'], owner, repo, 3)
+                print('Searching commits of ', user['login'])
+                user['commits'] = commits
 
         if(count == 100):
             page += 1
@@ -98,8 +104,34 @@ def getRepoContributors(owner, repo):
 
         if flag == False:
             return jsonify(contributors)
-    
-@app.route("/users/<username>")
+
+def getCommits(username, owner, repo, perPage):
+    i = 0
+    url = f"https://api.github.com/repos/{owner}/{repo}/commits?committer={username}&page=1&per_page={perPage}"
+    headers = {
+        "Accept": "application/vnd.github.v3+json",
+        "Authorization": f"token {github_api_token}"
+    }
+
+    try:
+        # Do GET request to GitHub API
+        response = requests.get(url, headers=headers)
+        response.raise_for_status() 
+        commits = response.json()
+        if len(commits) == 0:
+            return None
+        return commits
+    except requests.exceptions.RequestException as e:
+        # If an error occurs during the request, extract the error message and code
+        errorFullMessage = e.args[0]
+        errorCode = errorFullMessage.split(" ")[0]
+        errorMessage = " ".join(errorFullMessage.split(" ")[1:])
+
+        return {
+            "error": errorMessage,
+            "status": errorCode
+        }, errorCode
+
 def getUser(username):
     url = f"https://api.github.com/users/{username}"
     headers = {

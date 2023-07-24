@@ -40,7 +40,6 @@ function Body() {
 					setRepo(data)
 					setError(undefined)
 				}
-
 				fetch(`/repos/${repoOwner}/${repoName}/contributors`)
 					.then((res) => res.json())
 					.then((data) => {

@@ -106,23 +106,38 @@ function DeveloperDialog({ open, developer, onClose }) {
 								<Typography variant="h5">Info Prev</Typography>
 								<hr />
 								<Typography variant="h6">
+									Modulo USERNAME: N/A
+								</Typography>
+								<Typography variant="h6">
 									Modulo NAME-COUNTRY: N/A
 								</Typography>
 								<Typography variant="h6">
 									Modulo CV-COUNTRY:{' '}
 									{(developer.pdfs &&
 										developer.pdfs.map((pdf) => (
+											<a href={pdf} target="_blank">
+												<Typography variant="h6">
+													{pdf}
+												</Typography>
+											</a>
+										))) ||
+										'N/A'}
+								</Typography>
+								<Typography variant="h6">
+									Modulo COMMIT-COUNTRY:{' '}
+									{(developer.commits &&
+										developer.commits.map((commit) => (
 											<Typography variant="h6">
-												{pdf}
+												&#60;&#60;
+												{commit.commit.message}
+												&#62;&#62;
 											</Typography>
 										))) ||
 										'N/A'}
 								</Typography>
 								<Typography variant="h6">
-									Modulo COMMIT-COUNTRY: N/A
-								</Typography>
-								<Typography variant="h6">
-									Location: {developer.location || 'N/A'}
+									Modulo LOCATION:{' '}
+									{developer.location || 'N/A'}
 								</Typography>
 							</CardContent>
 						</Card>
