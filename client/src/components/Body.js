@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
 	TextField,
 	Button,
@@ -20,12 +20,33 @@ function Body() {
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const [error, setError] = useState(null)
 	const [repo, setRepo] = useState({})
+	const [dispersion, setDispersion] = useState({})
 	// const [repoName, setRepoName] = useState()
 	// const [repoOwner, setRepoOwner] = useState()
 
+	// useEffect(() => {
+	// 	fetch('/exampleOpenAI')
+	// 		.then((res) => res.json())
+	// 		.then((data) => {
+	// 			console.log(data)
+	// 			if (data.status == '403' || data.status == '404') {
+	// 				setError(data)
+	// 				console.log(data)
+	// 				return
+	// 			} else {
+	// 				console.log(data)
+	// 			}
+	// 		})
+	// 		.catch((e) => {})
+	// }, [])
+
 	const handleRepositorySubmit = () => {
-		const repoOwner = 'carbon-language'
-		const repoName = 'carbon-lang'
+		const repoOwner = 'cirovitale'
+		const repoName = 'Zyphyk-Sport'
+		// const repoOwner = 'Hikki00'
+		// const repoName = 'Raptor-AI'
+		// const repoOwner = 'carbon-language'
+		// const repoName = 'carbon-lang'
 		setDevelopers([])
 		setRepo({})
 
@@ -49,7 +70,8 @@ function Body() {
 							setError(data)
 							setDevelopers([])
 						} else {
-							setDevelopers(data)
+							setDevelopers(data.contributors)
+							setDispersion(data.culturalDispersion)
 							setError(undefined)
 						}
 					})
@@ -91,9 +113,9 @@ function Body() {
 					</div>
 				)}
 
-				{developers.length > 0 && (
+				{developers && developers.length > 0 && (
 					<div className="info-section">
-						<RepositoryInfo repo={repo} />
+						<RepositoryInfo repo={repo} dispersion={dispersion} />
 						<DeveloperList
 							developers={developers}
 							onDeveloperClick={handleDeveloperClick}

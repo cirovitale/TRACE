@@ -10,6 +10,9 @@ import {
 	CardContent,
 	Container,
 } from '@mui/material'
+import Tooltip from '@mui/material/Tooltip'
+import IconButton from '@mui/material/IconButton'
+import InfoIcon from '@mui/icons-material/Info'
 
 function DeveloperDialog({ open, developer, onClose }) {
 	return (
@@ -29,9 +32,9 @@ function DeveloperDialog({ open, developer, onClose }) {
 						<Card className="dev-predict-result">
 							<CardContent className="card-predict-result">
 								<Container>
-									<p>1</p>
-									<p>1</p>
-									<p>1</p>
+									<p>
+										{developer.prediction.estimatedCountry}
+									</p>
 								</Container>
 							</CardContent>
 						</Card>
@@ -106,38 +109,156 @@ function DeveloperDialog({ open, developer, onClose }) {
 								<Typography variant="h5">Info Prev</Typography>
 								<hr />
 								<Typography variant="h6">
-									Modulo USERNAME: N/A
+									Modulo USERNAME
+									<Tooltip
+										title={
+											(developer.prediction.username &&
+												JSON.parse(
+													developer.prediction
+														.username.choices[0]
+														.message.content
+												).isoPredicted != 'null' &&
+												JSON.parse(
+													developer.prediction
+														.username.choices[0]
+														.message.content
+												).isoPredicted != 'Null' &&
+												JSON.parse(
+													developer.prediction
+														.username.choices[0]
+														.message.content
+												).isoPredicted != 'NULL' &&
+												JSON.parse(
+													developer.prediction
+														.username.choices[0]
+														.message.content
+												).isoPredicted != '' &&
+												JSON.parse(
+													developer.prediction
+														.username.choices[0]
+														.message.content
+												).reasons) ||
+											'N/A'
+										}
+									>
+										<IconButton>
+											<InfoIcon />
+										</IconButton>
+									</Tooltip>
+									:{' '}
+									{(developer.prediction.username &&
+										JSON.parse(
+											developer.prediction.username
+												.choices[0].message.content
+										).isoPredicted != 'null' &&
+										JSON.parse(
+											developer.prediction.username
+												.choices[0].message.content
+										).isoPredicted != 'Null' &&
+										JSON.parse(
+											developer.prediction.username
+												.choices[0].message.content
+										).isoPredicted != 'NULL' &&
+										JSON.parse(
+											developer.prediction.username
+												.choices[0].message.content
+										).isoPredicted != '' &&
+										JSON.parse(
+											developer.prediction.username
+												.choices[0].message.content
+										).isoPredicted) ||
+										'N/A'}
 								</Typography>
 								<Typography variant="h6">
 									Modulo NAME-COUNTRY: N/A
 								</Typography>
 								<Typography variant="h6">
-									Modulo CV-COUNTRY:{' '}
-									{(developer.pdfs &&
-										developer.pdfs.map((pdf) => (
-											<a href={pdf} target="_blank">
-												<Typography variant="h6">
-													{pdf}
-												</Typography>
-											</a>
+									Modulo CV-COUNTRY
+									{(developer.prediction.pdfs != null &&
+										developer.prediction.pdfs.length != 0 &&
+										developer.prediction.pdfs.map((pdf) => (
+											<>
+												<Tooltip
+													title={
+														<>
+															<a
+																href={pdf.url}
+																target="_blank"
+															>
+																{pdf.url}
+															</a>{' '}
+															{
+																JSON.parse(
+																	pdf
+																		.isoDetected
+																		.choices[0]
+																		.message
+																		.content
+																).reasons
+															}
+														</>
+													}
+												>
+													<IconButton>
+														<InfoIcon />
+													</IconButton>
+												</Tooltip>
+												:{' '}
+												{
+													JSON.parse(
+														pdf.isoDetected
+															.choices[0].message
+															.content
+													).isoPredicted
+												}
+											</>
 										))) ||
+										': N/A'}
+								</Typography>
+								<Typography variant="h6">
+									Modulo COMMIT-COUNTRY
+									<Tooltip
+										title={
+											(developer.prediction.commits &&
+												developer.prediction.commits
+													.commits &&
+												developer.prediction.commits.commits.map(
+													(commit, count) =>
+														'*** << COMMIT ' +
+														(parseInt(count) + 1) +
+														': ' +
+														commit.commit.commit
+															.message +
+														'>> {language detected: ' +
+														commit.isoDetected +
+														'} ***'
+												)) ||
+											'N/A'
+										}
+									>
+										<IconButton>
+											<InfoIcon />
+										</IconButton>
+									</Tooltip>
+									:{' '}
+									{(developer.prediction.commits &&
+										developer.prediction.commits
+											.isoDetected) ||
 										'N/A'}
 								</Typography>
 								<Typography variant="h6">
-									Modulo COMMIT-COUNTRY:{' '}
-									{(developer.commits &&
-										developer.commits.map((commit) => (
-											<Typography variant="h6">
-												&#60;&#60;
-												{commit.commit.message}
-												&#62;&#62;
-											</Typography>
-										))) ||
+									Modulo LOCATION
+									<Tooltip
+										title={developer.location || 'N/A'}
+									>
+										<IconButton>
+											<InfoIcon />
+										</IconButton>
+									</Tooltip>
+									:{' '}
+									{(developer.prediction.location &&
+										developer.prediction.location) ||
 										'N/A'}
-								</Typography>
-								<Typography variant="h6">
-									Modulo LOCATION:{' '}
-									{developer.location || 'N/A'}
 								</Typography>
 							</CardContent>
 						</Card>

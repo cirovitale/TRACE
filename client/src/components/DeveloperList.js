@@ -30,11 +30,10 @@ function DeveloperList({ developers, onDeveloperClick }) {
 							</ListItemAvatar>
 							<ListItemText
 								primary={`${developer.login}` || 'N/A'}
-								secondary={
-									`Estimated Country: ${
-										developer.nationality || 'N/A'
-									}` || 'N/A'
-								}
+								secondary={`Estimated Country: ${
+									developer.prediction.estimatedCountry ||
+									'N/A'
+								}`}
 							/>
 						</ListItem>
 					))}
