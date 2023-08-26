@@ -6,6 +6,7 @@ from flask import jsonify
 import sys
 import os
 import PyPDF2
+import re
 import requests
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -15,7 +16,7 @@ import threading
 import json
 
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
-maxFileSize = 5 * 1024 * 1024  # 5MB in bytes
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB in bytes
 
 def detectCVCountryOpenAI(textPdf, results):
     try:
@@ -24,7 +25,7 @@ def detectCVCountryOpenAI(textPdf, results):
             messages=[
                 {
                     "role": "user", 
-                    "content": f"Data la seguente informazione dal Curriculum Vitae di uno sviluppatore, analizza Nome, Indirizzi, Numeri di Telefono, Esperienza Lavorative, Formazione, Lingua, Progetti e tutto ciò che può essere utile per tentare di prevedere la sua nazionalità. Restituisci la previsione nel formato JSON indicato, usando 'NULL' se non puoi fare una previsione. Assicurati di utilizzare SOLO singole ('') o doppie (\") virgolette nel formato JSON. Non utilizzare virgolette doppie non escape all'interno delle stringhe JSON. Restituisci SOLO ed ESCLUSIVAMENTE un JSON con il formato seguente: {json.dumps({ 'isoPredicted': '[PREDIZIONE ISO 3166-1 alpha-2 NAZIONALITÀ o NULL]', 'reasons': '[MOTIVAZIONI DELLA SCELTA]', 'completeAnswers': '[RISPOSTA DETTAGLIATA]' })} Contenuto CV: [[[ {textPdf} ]]]"
+                    "content": f"Based on the information provided and doing your best, try to make a prediction. Given the following information from a developer's Curriculum Vitae, analyze Name, Addresses, Phone Numbers, Work Experience, Education, Language, Projects, and anything else that may be useful in trying to predict his or her nationality. Return the prediction in the given JSON format, using 'NULL' if you cannot make a prediction. Be sure to use ONLY single ('') or double (\") quotes in the JSON format. Do not use unescaped double quotes within JSON strings. ONLY and EXCLUSIVELY return a JSON with the following format: {json.dumps({ 'isoPredicted': '[PREDICTION ISO 3166-1 alpha-2 COUNTRY or NULL]', 'reasons': '[REASONS FOR THE CHOICE]', 'completeAnswers': '[DETAILED ANSWER]' })} CV CONTENT: [[[ {textPdf} ]]]"
                 }
             ],
             temperature=1
@@ -36,7 +37,7 @@ def detectCVCountryOpenAI(textPdf, results):
 def detectCountryFromCV(urlPdf, docType):
     results = {}
     # Setup thread call and start it
-    timeout_seconds = 10
+    timeout_seconds = 15
     textPdf = getTextByPdf(urlPdf, docType)
     thread = threading.Thread(target=detectCVCountryOpenAI, args=(textPdf, results))
     thread.start()
@@ -44,50 +45,68 @@ def detectCountryFromCV(urlPdf, docType):
 
     if thread.is_alive():
         # Timeout handling
-        print("API call timed out.")
-        return jsonify({
+        return {
             "error": "API call timed out",
             "status": "408"
-        })
+        }
 
     if 'error' in results:
-        print(f"Error OpenAI API: {results['error']}")
-        return jsonify({
+        return {
             "error": results['error'],
             "status": "403"
-        })
+        }
 
-    print(results['data'])
-    return results['data']
+    # print(results['data']['choices'][0]['message']['content'])
+    return results['data']['choices'][0]['message']['content']
 
-def isCV(urlPdf):
-    # Check for common CV file name keywords
-    fileName = urllib.parse.unquote(urlPdf.split('/')[-1]).lower()
+
+def isCV(urlPdf, docType):
+    fileName = ""
+
+    if docType == "pdf":
+        fileName = urllib.parse.unquote(urlPdf.split('/')[-1]).lower()
+    # elif docType in ["googleDrive", "googleDocs"]:
+    #     # fileName = getTitleFromGoogleDocs(urlPdf).lower()
+
+
 
     fileNameKeywords = ['cv', 'resume', 'curriculum', 'vitae']
     if not any(keyword in fileName for keyword in fileNameKeywords):
         return False
     
-    try:
-        # Download the PDF content
-        response = requests.get(urlPdf)
+    if docType == "pdf":
+        try:
+            # Download the PDF content
+            response = requests.get(urlPdf)
 
-        # Check file size (tipically less then 5MB)
-        fileSize = int(response.headers.get('Content-Length', 0))
-        if fileSize > maxFileSize:
-            return False
-    
-        with BytesIO(response.content) as open_pdf_file:
-            pdf = PyPDF2.PdfReader(open_pdf_file)
+            # Check file size (tipically less then 5MB)
+            fileSize = int(response.headers.get('Content-Length', 0))
+            if fileSize > MAX_FILE_SIZE:
+                return False
+        
+            with BytesIO(response.content) as open_pdf_file:
+                pdf = PyPDF2.PdfReader(open_pdf_file)
 
-            # Check number of pages (typically between 1 to 5)
-            if 1 <= len(pdf.pages) <= 5:
-                return True
+                # Check number of pages (typically between 1 to 5)
+                if 1 <= len(pdf.pages) <= 5:
+                    return True
 
-    except Exception as e:
-        print(f"Error processing PDF from {urlPdf}. Error: {e}")
+        except Exception as e:
+            print(f"Error processing PDF from {urlPdf}. Error: {e}")
+    elif docType in ["googleDrive", "googleDocs"]:
+        # flag = isValidGoogleDocsPdf(urlPdf)
+        flag = True
+        # return True    
 
     return False
+
+def getIdFileFromGoogleUrl(url):
+    # Extract idFile from Google DOCS URL
+    id = re.search(r"/d/([\w-]+)/", url)
+    if id:
+        return id.group(1)
+    else:
+        return None
 
 def getTextByPdf(url, docType):
     text = ""
@@ -105,19 +124,10 @@ def getTextByPdf(url, docType):
 
     # Extract text from Google Drive/Docs
     elif docType in ["googleDrive", "googleDocs"]:
-        try:
-            # Set up the API
-            scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-            creds = ServiceAccountCredentials.fromJsonKeyfileName(GOOGLE_API_KEY, scope)
-            client = gspread.authorize(creds)
+        print("************* Google Document PDF")
 
-            # Open the document
-            document = client.openByUrl(url)
-            worksheet = document.getWorksheet(0) 
-            text = worksheet.getAllValues()
-        except Exception as e:
-            print(f"Error accessing Google document: {e}")
-
+        # text = getTextFromGoogleDocs(url)
+        
     return text
 
 def searchPdf(urlSite):
@@ -158,12 +168,26 @@ def searchPdf(urlSite):
                     except Exception as e:
                         print(f"Error accessing PDF url: {e}")
                         return "Bad Request", 403
-            if(isCV(urlPdf)):
+            if(isCV(urlPdf, docType)):
                 response = detectCountryFromCV(urlPdf, docType)
-                pdf = {
-                    'url': urlPdf,
-                    'isoPredicted': response
-                }
+
+                # Check if response is dict and contains 'error' key
+                if isinstance(response, dict) and 'error' in response:
+                    if response.get('status') == "408":
+                        print("[PDF PREDICT] Timeout error: ", response.get('error'))
+                    elif response.get('status') == "403":
+                        print("[PDF PREDICT] OpenAI API error: ", response.get('error'))
+                    else:
+                        print("[PDF PREDICT] Unknown error: ", response.get('error'))
+                    pdf = {
+                        'url': urlPdf,
+                        'isoPredicted': response.get('error')
+                    }
+                else:
+                    pdf = {
+                        'url': urlPdf,
+                        'isoPredicted': response
+                    }
                 pdfs.append(pdf)
 
     return pdfs

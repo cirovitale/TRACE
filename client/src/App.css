@@ -10,9 +10,17 @@
 	margin-top: 24px;
 }
 
+.input-section .MuiFormHelperText-root {
+	max-width: 270px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .input-section .MuiButton-root,
 .input-section .MuiInputBase-root {
 	height: 56px;
+	width: 300px;
 }
 
 .dev-predict-result {

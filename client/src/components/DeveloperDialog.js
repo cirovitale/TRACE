@@ -13,6 +13,7 @@ import {
 import Tooltip from '@mui/material/Tooltip'
 import IconButton from '@mui/material/IconButton'
 import InfoIcon from '@mui/icons-material/Info'
+import ReactCountryFlag from 'react-country-flag'
 
 function DeveloperDialog({ open, developer, onClose }) {
 	return (
@@ -31,11 +32,32 @@ function DeveloperDialog({ open, developer, onClose }) {
 					<DialogContent>
 						<Card className="dev-predict-result">
 							<CardContent className="card-predict-result">
-								<Container>
-									<p>
-										{developer.prediction.estimatedCountry}
-									</p>
-								</Container>
+								<Grid container spacing={2}>
+									<Grid item xs={12} sm={12}>
+										<Typography variant="h5">
+											Estimated Country
+										</Typography>
+										<hr />
+										<Typography variant="h6">
+											{(developer.prediction
+												.estimatedCountry && (
+												<ReactCountryFlag
+													className="emojiFlag"
+													countryCode={
+														developer.prediction
+															.estimatedCountry
+													}
+													style={{
+														fontSize: '5em',
+													}}
+													title="IT"
+													svg
+												/>
+											)) ||
+												'N/A'}
+										</Typography>
+									</Grid>
+								</Grid>
 							</CardContent>
 						</Card>
 						<Card className="dev-predict-result">
@@ -43,7 +65,7 @@ function DeveloperDialog({ open, developer, onClose }) {
 								<Grid container spacing={2}>
 									<Grid item xs={12} sm={8}>
 										<Typography variant="h5">
-											Info Utente
+											User's Info
 										</Typography>
 										<hr />
 										<Typography variant="h6">
@@ -102,42 +124,23 @@ function DeveloperDialog({ open, developer, onClose }) {
 								</Grid>
 							</CardContent>
 						</Card>
-						<br />
-						<br />
 						<Card>
 							<CardContent>
-								<Typography variant="h5">Info Prev</Typography>
+								<Typography variant="h5">
+									Prediction Details from Modules
+								</Typography>
 								<hr />
 								<Typography variant="h6">
-									Modulo USERNAME
+									USERNAME
 									<Tooltip
 										title={
 											(developer.prediction.username &&
-												JSON.parse(
-													developer.prediction
-														.username.choices[0]
-														.message.content
-												).isoPredicted != 'null' &&
-												JSON.parse(
-													developer.prediction
-														.username.choices[0]
-														.message.content
-												).isoPredicted != 'Null' &&
-												JSON.parse(
-													developer.prediction
-														.username.choices[0]
-														.message.content
-												).isoPredicted != 'NULL' &&
-												JSON.parse(
-													developer.prediction
-														.username.choices[0]
-														.message.content
-												).isoPredicted != '' &&
-												JSON.parse(
-													developer.prediction
-														.username.choices[0]
-														.message.content
-												).reasons) ||
+												developer.prediction.username.isoPredicted.toUpperCase() !=
+													'NULL' &&
+												developer.prediction.username
+													.isoPredicted != '' &&
+												developer.prediction.username
+													.reasons) ||
 											'N/A'
 										}
 									>
@@ -147,33 +150,19 @@ function DeveloperDialog({ open, developer, onClose }) {
 									</Tooltip>
 									:{' '}
 									{(developer.prediction.username &&
-										JSON.parse(
-											developer.prediction.username
-												.choices[0].message.content
-										).isoPredicted != 'null' &&
-										JSON.parse(
-											developer.prediction.username
-												.choices[0].message.content
-										).isoPredicted != 'Null' &&
-										JSON.parse(
-											developer.prediction.username
-												.choices[0].message.content
-										).isoPredicted != 'NULL' &&
-										JSON.parse(
-											developer.prediction.username
-												.choices[0].message.content
-										).isoPredicted != '' &&
-										JSON.parse(
-											developer.prediction.username
-												.choices[0].message.content
-										).isoPredicted) ||
+										developer.prediction.username.isoPredicted.toUpperCase() !=
+											'NULL' &&
+										developer.prediction.username
+											.isoPredicted != '' &&
+										developer.prediction.username
+											.isoPredicted) ||
 										'N/A'}
 								</Typography>
 								<Typography variant="h6">
-									Modulo NAME-COUNTRY: N/A
+									NAME-COUNTRY: N/A
 								</Typography>
 								<Typography variant="h6">
-									Modulo CV-COUNTRY
+									CV-COUNTRY
 									{(developer.prediction.pdfs != null &&
 										developer.prediction.pdfs.length != 0 &&
 										developer.prediction.pdfs.map((pdf) => (
@@ -189,11 +178,7 @@ function DeveloperDialog({ open, developer, onClose }) {
 															</a>{' '}
 															{
 																JSON.parse(
-																	pdf
-																		.isoDetected
-																		.choices[0]
-																		.message
-																		.content
+																	pdf.isoPredicted
 																).reasons
 															}
 														</>
@@ -205,18 +190,15 @@ function DeveloperDialog({ open, developer, onClose }) {
 												</Tooltip>
 												:{' '}
 												{
-													JSON.parse(
-														pdf.isoDetected
-															.choices[0].message
-															.content
-													).isoPredicted
+													JSON.parse(pdf.isoPredicted)
+														.isoPredicted
 												}
 											</>
 										))) ||
 										': N/A'}
 								</Typography>
 								<Typography variant="h6">
-									Modulo COMMIT-COUNTRY
+									COMMIT-COUNTRY
 									<Tooltip
 										title={
 											(developer.prediction.commits &&
@@ -247,7 +229,7 @@ function DeveloperDialog({ open, developer, onClose }) {
 										'N/A'}
 								</Typography>
 								<Typography variant="h6">
-									Modulo LOCATION
+									LOCATION
 									<Tooltip
 										title={developer.location || 'N/A'}
 									>

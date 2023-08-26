@@ -1,13 +1,14 @@
-import { Card, CardContent, CardHeader, Typography } from '@mui/material'
+import { Alert, Card, CardContent, CardHeader, Typography } from '@mui/material'
 import React from 'react'
 
 const ErrorInfo = ({ error }) => {
 	return (
 		<Card>
-			<CardHeader title={`${error.status}`} />
-			<CardContent>
-				<Typography>{error.error}</Typography>
-			</CardContent>
+			<Alert sx={{ p: 2 }} severity="error">
+				ERROR CODE: {error.status}
+				<br />
+				{error.error}
+			</Alert>
 		</Card>
 	)
 }

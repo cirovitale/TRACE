@@ -18,10 +18,7 @@ import Body from './components/Body'
 function App() {
 	return (
 		<Container>
-			<Header
-				logo="logo.jpg"
-				name="Developers Cultural Dispersion TOOL"
-			/>
+			<Header logo="logo.jpg" name="TRACE" />
 			<Body />
 		</Container>
 	)

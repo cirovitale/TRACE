@@ -2,17 +2,25 @@ from flask import Flask
 from flask import jsonify
 import requests
 import os
-import logging
+# import logging
 import openai
 from business_logic.searchPdf import searchPdf
 import threading
 import json
 from langdetect import detect
 from geopy.geocoders import Nominatim
-from collections import Counter
+# from flask_compress import Compress
+import math
+# from google.cloud import translate_v2 as translate
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 app = Flask(__name__)
+GOOGLE_API_KEY = os.environ["GOOGLE_API_KEY"]
+# translate_client = translate.Client(key=GOOGLE_APPLICATION_CREDENTIALS)
+# Compress(app)
 
 GITHUB_API_TOKEN = os.getenv('GITHUB_API_TOKEN')
 geolocator = Nominatim(user_agent="DCDTool")
@@ -23,19 +31,74 @@ geolocator = Nominatim(user_agent="DCDTool")
 # openai.organization = os.getenv("OPENAI_ORGANIZATION_ID")
 # openai.api_key = os.getenv("OPENAI_API_KEY")
 
+# WEIGHT of prediction for final resul, from 0.1 to 0.5
+WEIGHT_NAME = 0.4
+WEIGHT_USERNAME = 0.2
+WEIGHT_PDFS = 0.3
+WEIGHT_COMMITS = 0.2
+# English is international language and commits in english aren't weighted
+WEIGHT_COMMITS_EN = 0
+WEIGHT_LOCATION = 0.2
+
+# N/A limit percent to alert the noise in the info --- if update NA_LIMIT_PERCENT here, update also in Alert message in front-end (RepositoryInfo.js - MUI Alert Component)
+NA_LIMIT_PERCENT = 0.3
+
+def isAlertNAinRepo(culturalDispersion):
+    total = sum(culturalDispersion.values())
+    if("N/A" in culturalDispersion):
+        countNA = culturalDispersion["N/A"]
+        percentNA = countNA / total
+
+        if(percentNA > NA_LIMIT_PERCENT):
+            return True
+        else:
+            return False
+    else:
+        return False
+
 def getIsoFromLocation(location):    
     # Retrieve Location object from location github info
-    locationCoded = geolocator.geocode(location, addressdetails=True)
-    
-    if locationCoded:
-        # Extract ISO Code
-        countryCode = locationCoded.raw.get("address", {}).get("country_code", "").upper()
+    try:
+        locationCoded = geolocator.geocode(location, addressdetails=True)
+        
+        if locationCoded:
+            # Extract ISO Code
+            countryCode = locationCoded.raw.get("address", {}).get("country_code", "").upper()
 
-        if countryCode:
-            return countryCode
+            if countryCode:
+                return countryCode
+    except Exception as e:
+        # If an error occured during the call
+        print(f"Error geopy: {e}")
+        return jsonify({
+            "error": str(e),
+            "status": "403"
+        })
     
     
     return None
+
+def shannonIndex(culturalDispersion):
+    total = sum(culturalDispersion.values())
+
+    index = 0
+    for value in culturalDispersion.values():
+        proportion = value / total
+        index += proportion * math.log(proportion)
+
+    index = -index
+
+    if len(culturalDispersion) > 1:
+        percent = index / math.log(len(culturalDispersion)) * 100
+    else:
+        percent = 0
+    
+    
+
+    return {
+        'index':index,
+        'percent': percent
+    }
 
 def detectUsernameCountryOpenAI(username, results):
     try:
@@ -44,7 +107,7 @@ def detectUsernameCountryOpenAI(username, results):
             messages=[
                 {
                     "role": "user",
-                    "content": f"Dato il seguente username [[[ {username} ]]], tenta di prevedere la nazionalità più probabile dell'utente in base al solo nome utente. Restituisci la previsione nel formato JSON indicato, usando 'NULL' se non puoi fare una previsione. Assicurati di utilizzare SOLO singole ('') o doppie (\") virgolette nel formato JSON. Non utilizzare virgolette doppie non escape all'interno delle stringhe JSON. Restituisci SOLO ed ESCLUSIVAMENTE un JSON con il formato seguente: {json.dumps({'isoPredicted': '[PREDIZIONE ISO 3166-1 alpha-2 o NULL]', 'reasons': '[MOTIVAZIONI DELLA SCELTA]', 'completeAnswers': '[RISPOSTA DETTAGLIATA]'})}"
+                    "content": f"FORNISCI RISPOSTA IN LINGUA INGLESE. Dato il seguente username [[[ {username} ]]], tenta di prevedere la nazionalità più probabile dell'utente in base al solo nome utente. Restituisci la previsione nel formato JSON indicato, usando 'NULL' se non puoi fare una previsione. Assicurati di utilizzare SOLO singole ('') o doppie (\") virgolette nel formato JSON. Non utilizzare virgolette doppie non escape all'interno delle stringhe JSON. Restituisci SOLO ed ESCLUSIVAMENTE un JSON con il formato seguente: {json.dumps({'isoPredicted': '[PREDIZIONE ISO 3166-1 alpha-2 o NULL]', 'reasons': '[MOTIVAZIONI DELLA SCELTA in LINGUA INGLESE]', 'completeAnswers': '[RISPOSTA DETTAGLIATA in LINGUA INGLESE]'})}"
                 }
             ],
             temperature=1
@@ -56,46 +119,74 @@ def detectUsernameCountryOpenAI(username, results):
 def detectCountryFromUsername(username):
     results = {}
     # Setup thread call and start it
-    timeout_seconds = 10
+    timeout_seconds = 15
     thread = threading.Thread(target=detectUsernameCountryOpenAI, args=(username, results))
     thread.start()
     thread.join(timeout=timeout_seconds)
 
     if thread.is_alive():
         # Timeout handling
-        print("API call timed out.")
-        return jsonify({
+        return {
             "error": "API call timed out",
             "status": "408"
-        })
+        }
 
     if 'error' in results:
-        print(f"Error OpenAI API: {results['error']}")
-        return jsonify({
+        return {
             "error": results['error'],
             "status": "403"
-        })
+        }
 
-    return results['data']
+    return results['data']['choices'][0]['message']['content']
 
-@app.route("/exampleOpenAI")
-def exampleOpenAI():
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": "Hello world"}],
-            temperature=1
-        )
-        print(response)
-        return response
-    except Exception as e:
-        # If an error occured during the api call
-        print(f"Error OpenAI api example: {e}")
-        return jsonify({
-            "error": str(e),
-            "status": "403"
-        })
+# @app.route("/exampleOpenAI")
+# def exampleOpenAI():
+#     try:
+#         response = openai.ChatCompletion.create(
+#             model="gpt-3.5-turbo",
+#             messages=[{"role": "user", "content": "Hello world"}],
+#             temperature=1
+#         )
+#         print(response)
+#         return response
+#     except Exception as e:
+#         # If an error occured during the api call
+#         print(f"Error OpenAI api example: {e}")
+#         return jsonify({
+#             "error": str(e),
+#             "status": "403"
+#         })
     
+@app.route("/repos/<owner>/<repo>/readme")
+def getRepoReadme(owner, repo):
+    url = f"https://api.github.com/repos/{owner}/{repo}/readme"
+    headers = {
+        "Accept": "application/vnd.github.v3+json",
+        "Authorization": f"token {GITHUB_API_TOKEN}"
+    }
+    
+    try:
+        # Do GET request to GitHub API
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        return jsonify(data)
+    except requests.exceptions.RequestException as e:
+        # If an error occurred during the API call
+        errorFullMessage = str(e.args[0]) if e.args else "Unknown error"
+        
+        if " " in errorFullMessage:
+            errorCode = errorFullMessage.split(" ")[0]
+            errorMessage = " ".join(errorFullMessage.split(" ")[1:])
+        else:
+            errorCode = "Unknown"
+            errorMessage = errorFullMessage
+        
+        print(f"Error GitHub accessing repo info: {e}")
+        return jsonify({
+            "error": errorMessage,
+            "status": errorCode
+        }), 500
 
 @app.route("/repos/<owner>/<repo>")
 def getRepoInfo(owner, repo):
@@ -110,28 +201,34 @@ def getRepoInfo(owner, repo):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         data = response.json()
-        print('QUI 1', jsonify(data))
         return jsonify(data)
     except requests.exceptions.RequestException as e:
-        # If an error occured during api call
-        errorFullMessage = e.args[0]
-        errorCode = errorFullMessage.split(" ")[0]
-        errorMessage = " ".join(errorFullMessage.split(" ")[1:])
+        # If an error occurred during the API call
+        errorFullMessage = str(e.args[0]) if e.args else "Unknown error"
+        
+        if " " in errorFullMessage:
+            errorCode = errorFullMessage.split(" ")[0]
+            errorMessage = " ".join(errorFullMessage.split(" ")[1:])
+        else:
+            errorCode = "Unknown"
+            errorMessage = errorFullMessage
         
         print(f"Error GitHub accessing repo info: {e}")
         return jsonify({
             "error": errorMessage,
             "status": errorCode
-        }), errorCode
+        }), 500
+
 
 @app.route("/repos/<owner>/<repo>/contributors")
 def getRepoContributors(owner, repo):
     page = 1
     flag = True
     contributors = []
+    culturalDispersion = {}
 
     while flag == True:
-        culturalDispersion = {}
+        
         
         url = f"https://api.github.com/repos/{owner}/{repo}/contributors?per_page=100&page={page}"
         headers = {
@@ -186,7 +283,20 @@ def getRepoContributors(owner, repo):
                 # Predict nationality from username
                 username = user['login']
                 print('Prediction by username of ', user['login'])
-                usernamePredict = detectCountryFromUsername(username)
+                usernamePredict = {}
+                response = detectCountryFromUsername(username)
+
+                # Check if response is dict and contains 'error' key
+                if isinstance(response, dict) and 'error' in response:
+                    if response.get('status') == "408":
+                        print("[USERNAME PREDICT] Timeout error: ", response.get('error'))
+                    elif response.get('status') == "403":
+                        print("[USERNAME PREDICT] OpenAI API error: ", response.get('error'))
+                    else:
+                        print("[USERNAME PREDICT] Unknown error: ", response.get('error'))
+                    usernamePredict = None
+                else:
+                    usernamePredict = response
 
                 # MODULO LOCATION
                 locationPredict = None
@@ -194,57 +304,71 @@ def getRepoContributors(owner, repo):
                     print('Search location ISO of  ', user['login'])
                     locationPredict = getIsoFromLocation(user['location'])
 
+                if(isinstance(locationPredict, dict) and locationPredict['status'] == "403"):
+                    # If an error occured
+                    locationPredict = None
+
                 # MODULO COMMIT
                 # Search 3 commits of contributor
                 print('Searching commits of ', user['login'])
                 commitsPredict = getCommits(user['login'], owner, repo, 3)  
 
+                if(isinstance(commitsPredict, dict) and 'error' in commitsPredict):
+                    # If an error occured
+                    commitsPredict = None
+
                 # MODULO NAME
                 namePredict = None
 
-                # WEIGHT of prediction for final resul, from 0.1 to 0.5
-                WEIGHT_NAME = 0.4
-                WEIGHT_USERNAME = 0.2
-                WEIGHT_PDFS = 0.3
-                WEIGHT_COMMITS = 0.2
-                # English is international language and commits in english aren't weighted
-                WEIGHT_COMMITS_EN = 0.001
-                WEIGHT_LOCATION = 0.2
+                
 
                 
 
                 final = {}
-                if (isinstance(usernamePredict, dict) and 'choices' in usernamePredict):
-                    print(usernamePredict['choices'][0]['message']['content'])
+                if(usernamePredict is not None):
                     try:
-                        usernameIso = json.loads(usernamePredict['choices'][0]['message']['content'])['isoPredicted']
-                    except Exception as e:
+                        usernamePredictJson = json.loads(usernamePredict)
+                    except json.decoder.JSONDecodeError:
+                        print(f"Error decoding JSON for value: {usernamePredict}")
+                    if ('isoPredicted' in usernamePredictJson):
+                            usernameIso = usernamePredictJson['isoPredicted']
+                    else:
                         usernameIso = None
-                        print(f"***************************************************************************************************************************Error during processing of OpenAI response: {e}")
+                    
                 else:
                     usernameIso = None
-                if(usernameIso is None or usernameIso.lower() == 'null'):
-                    usernameIso = None
-                nameIso = namePredict
-                pdfsIso = None
+                    usernamePredictJson = None
+
                 
+                if(usernameIso is None or usernameIso.lower() == 'null' or len(usernameIso) > 2):
+                    usernameIso = None
+
+                nameIso = namePredict
+
+
+                pdfsIso = None
                 ############ try except
-                # if pdfsPredict is not None and len(pdfsPredict) != 0 and pdfsPredict != 'NULL'  and pdfsPredict != 'Null'  and pdfsPredict != 'null':
-                #     pdfCountIso = {}
-                #     for pdf in pdfsPredict:
-                #         if pdf['isoPredicted'] is not None:
-                #             if pdf['isoPredicted'] in pdfCountIso:
-                #                 pdfCountIso[pdf['isoPredicted']] += 1
-                #             else:
-                #                 pdfCountIso[pdf['isoPredicted']] = 1
-                #     pdfsIso = max(pdfCountIso, key=pdfCountIso.get)
+                if pdfsPredict is not None and len(pdfsPredict) != 0:
+                    # for isoPredicted of pdf: pdfsPredict[0]['isoPredicted']['isoPredicted']
+                    pdfCountIso = {}
+                    for pdf in pdfsPredict:
+                        isoValue = None
+                        if pdf['isoPredicted']:
+                            try:
+                                isoValue = json.loads(pdf['isoPredicted'])['isoPredicted']
+                            except json.decoder.JSONDecodeError:
+                                print(f"Error decoding JSON for value: {pdf['isoPredicted']}")
+                                continue  # If error occured, skip to the next iteration
+                        if isoValue is not None and isoValue.upper() != 'NULL':
+                            if isoValue in pdfCountIso:
+                                pdfCountIso[isoValue] += 1
+                            else:
+                                pdfCountIso[isoValue] = 1
                     
-                    # Create Counter of iso prediction in case of multiple CVs
-                    # counterIso = Counter(pdf['isoPredicted'] for pdf in pdfsPredict)
-                    # Sort collection descending and take the max
-                    # most_common_isoPrediction = counterIso.most_common(1)[0]
-                    # pdfsIso = most_common_isoPrediction
-                    # pdfsIso = max(pdfCountIso, key=pdfCountIso.get)
+                    # Check if dict is not empty
+                    if pdfCountIso:
+                        pdfsIso = max(pdfCountIso, key=pdfCountIso.get)
+                    
                 if commitsPredict is not None:
                     commitsIso = commitsPredict['isoDetected']
                 else:
@@ -254,7 +378,6 @@ def getRepoContributors(owner, repo):
                 print('#################################')
 
                 # Calculate estimated country for developer
-
                 ### NAME ###
                 if(nameIso is not None):
                     print(f'NAME PREDICTED ({WEIGHT_NAME}): ', nameIso)
@@ -287,18 +410,22 @@ def getRepoContributors(owner, repo):
                 ### COMMITS ###
                 if(commitsIso is not None):
                     if(commitsIso in final):
-                        if(commitsIso == 'EN'):
-                            final[commitsIso] += WEIGHT_COMMITS_EN
-                        else:
+                        # if(commitsIso == 'EN'):
+                        #     final[commitsIso] += WEIGHT_COMMITS_EN
+                        # else:
+                        #     final[commitsIso] += WEIGHT_COMMITS
+                        if(commitsIso != 'EN'):
                             final[commitsIso] += WEIGHT_COMMITS
                     else:
-                        if(commitsIso == 'EN'):
-                            final[commitsIso] = WEIGHT_COMMITS_EN
-                        else:
+                        # if(commitsIso == 'EN'):
+                        #     final[commitsIso] = WEIGHT_COMMITS_EN
+                        # else:
+                        #     final[commitsIso] = WEIGHT_COMMITS
+                        if(commitsIso != 'EN'):
                             final[commitsIso] = WEIGHT_COMMITS
-                    print(f'COMMIT PREDICTED ({WEIGHT_COMMITS}): ', commitsIso)
+                    print(f'COMMIT PREDICTED ({WEIGHT_COMMITS} || if EN : {WEIGHT_COMMITS_EN}): ', commitsIso)
                 else:
-                    print(f'COMMIT PREDICTED ({WEIGHT_COMMITS}): ', commitsIso)
+                    print(f'COMMIT PREDICTED ({WEIGHT_COMMITS} || if EN : {WEIGHT_COMMITS_EN}): ', commitsIso)
 
                 ### LOCATION ###
                 if(locationIso is not None):
@@ -323,15 +450,17 @@ def getRepoContributors(owner, repo):
                         culturalDispersion['N/A'] += 1
                     else:
                         culturalDispersion['N/A'] = 1
-                if(estimatedCountry in culturalDispersion):
-                    culturalDispersion[estimatedCountry] += 1
                 else:
-                    culturalDispersion[estimatedCountry] = 1
+                    estimatedCountry = estimatedCountry.upper()
+                    if(estimatedCountry in culturalDispersion):
+                        culturalDispersion[estimatedCountry] += 1
+                    elif(estimatedCountry not in culturalDispersion):
+                        culturalDispersion[estimatedCountry] = 1
 
                 user['prediction'] = {
                     'name': namePredict,
                     'pdfs': pdfsPredict,
-                    'username': usernamePredict,
+                    'username': usernamePredictJson,
                     'commits': commitsPredict,
                     'location': locationPredict,
                     'estimatedCountry': estimatedCountry
@@ -351,21 +480,69 @@ def getRepoContributors(owner, repo):
         else:
             flag = False
 
-        if flag == False:
-            contributorsObj = {
-                'contributors': contributors,
-                'culturalDispersion': culturalDispersion
-            }
-            print('contributorsObj:', contributorsObj)
-            return jsonify(contributorsObj)
+        # if flag == False:
+        #     contributorsObj = {
+        #         'contributors': contributors,
+        #         'culturalDispersion': culturalDispersion
+        #     }
+        #     print('contributorsObj:', contributorsObj)
+        #     return contributorsObj
         
-    
+    alert = isAlertNAinRepo(culturalDispersion)
+    shannon = shannonIndex(culturalDispersion)
     contributorsObj = {
         'contributors': contributors,
-        'culturalDispersion': culturalDispersion
+        'culturalDispersion': {
+            'countryDisp': culturalDispersion,
+            'shannonIndex': shannon['index'],
+            'percentCultDisp': shannon['percent']
+        },
+        'alert': alert
     }
-    print('contributorsObj:', contributorsObj)
-    return jsonify(contributorsObj)
+
+    print('\n#################################')
+    print(f'Prediction for Contributors: {culturalDispersion}')
+    print(f'Shannon Index: {shannon["index"]}')
+    print(f'Cultural Dispersion Percent: {shannon["percent"]}')
+    print(f'Alert N/A Noise: {alert}')
+    print('#################################\n')
+    try:
+        # print('contributorsObj:', contributorsObj)
+        return contributorsObj
+    except Exception as e:
+        print(f"Error during final jsonify: {e}")
+        return jsonify({
+            "error": str(e),
+            "status": "403"
+        }), "403"   
+
+def detectLanguageFromCommitGoogle(text):
+    if not text:
+        return jsonify({
+            "error": "Text is required",
+            "status": "403"
+        }), "403" 
+
+    # Detect Language
+    url = "https://translation.googleapis.com/language/translate/v2/detect"
+    params = {
+        "q": text,
+        "key": GOOGLE_API_KEY
+    }
+
+    try:
+        response = requests.post(url, params=params)
+        data = response.json()
+        result = data['data']['detections'][0][0]
+    
+
+        return result["language"]
+    except requests.RequestException as e:
+        return jsonify({"error": str(e), "status": "500"}), 500
+
+    except Exception as e:
+        # Gestisci altri errori imprevisti
+        return jsonify({"error": "Unknown error: {e}", "status": "500"}), 500
 
 def getCommits(username, owner, repo, perPage):
     i = 0
@@ -388,7 +565,10 @@ def getCommits(username, owner, repo, perPage):
         flag = False
         # For each commit detect language and count type of language detected, counts EN only if it is the only language detected
         for index, commit in enumerate(commits):
-            isoDetected = detect(commit['commit']['message']).upper()
+            if(GOOGLE_API_KEY != ""):
+                isoDetected = detectLanguageFromCommitGoogle(commit['commit']['message']).upper()
+            else:
+                isoDetected = detect(commit['commit']['message']).upper()
             if(isoDetected == "EN"):
                 flag = True
             else: 
