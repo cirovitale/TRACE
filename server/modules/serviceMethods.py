@@ -232,7 +232,7 @@ def getRepoContributors_Predicts(owner, repo, GITHUB_API_TOKEN, GOOGLE_API_KEY):
                     except json.decoder.JSONDecodeError:
                         usernamePredictJson = None
                         print(f"[USERNAME PREDICT] Error decoding JSON for value: {usernamePredict}")
-                    if ('isoPredicted' in usernamePredictJson):
+                    if (usernamePredict is not None and 'isoPredicted' in usernamePredictJson):
                             usernameIso = usernamePredictJson['isoPredicted']
                     else:
                         usernameIso = None

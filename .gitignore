@@ -1,0 +1,37 @@
+# --- Global ---
+*.log
+*.swp
+*.bak
+*.tmp
+.DS_Store
+node_modules/
+.idea/
+.vscode/
+*.egg-info/
+*.egg
+db.sqlite3
+*.pyc
+__pycache__/
+*.pyo
+*.db
+
+# --- Flask (SERVER) ---
+server/instance/
+server/.webassets-cache
+server/migrations/
+server/models
+server/vectorizers
+.env
+
+# --- React (CLIENT) ---
+client/node_modules/
+client/build/
+client/.env.local
+client/.env.development.local
+client/.env.test.local
+client/.env.production.local
+client/npm-debug.log*
+
+# --- Venv ---
+venv/
+*.venv
