@@ -1,17 +1,6 @@
-import React, { useState } from 'react'
-import {
-	TextField,
-	Button,
-	Container,
-	AppBar,
-	Toolbar,
-	Typography,
-} from '@mui/material'
+import React from 'react'
+import { Container } from '@mui/material'
 import './App.css'
-import DeveloperList from './components/DeveloperList'
-import RepositoryInfo from './components/RepositoryInfo'
-import DeveloperDialog from './components/DeveloperDialog'
-import ErrorInfo from './components/ErrorInfo'
 import Header from './components/Header'
 import Body from './components/Body'
 

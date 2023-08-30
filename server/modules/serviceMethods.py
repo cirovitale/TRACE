@@ -48,7 +48,7 @@ def getUserGIT(username, GITHUB_API_TOKEN):
         errorCode = errorFullMessage.split(" ")[0]
         errorMessage = " ".join(errorFullMessage.split(" ")[1:])
 
-        print(f"Error GitHub accessing user info: {e}")
+        print(f"[GITHUB API] Error GitHub accessing user info: {e}")
         return jsonify({
             "error": errorMessage,
             "status": errorCode
@@ -79,7 +79,7 @@ def getRepoReadmeGIT(owner, repo, GITHUB_API_TOKEN):
             errorCode = "Unknown"
             errorMessage = errorFullMessage
         
-        print(f"Error GitHub accessing repo info: {e}")
+        print(f"[GITHUB API] Error GitHub accessing repo info: {e}")
         return jsonify({
             "error": errorMessage,
             "status": errorCode
@@ -110,7 +110,7 @@ def getRepoInfoGIT(owner, repo, GITHUB_API_TOKEN):
             errorCode = "Unknown"
             errorMessage = errorFullMessage
         
-        print(f"Error GitHub accessing repo info: {e}")
+        print(f"[GITHUB API] Error GitHub accessing repo info: {e}")
         return jsonify({
             "error": errorMessage,
             "status": errorCode
@@ -142,7 +142,7 @@ def getRepoContributors_Predicts(owner, repo, GITHUB_API_TOKEN, GOOGLE_API_KEY):
             errorCode = errorFullMessage.split(" ")[0]
             errorMessage = " ".join(errorFullMessage.split(" ")[1:])
             
-            print(f"Error GitHub accessing repo's contribur info: {e}")
+            print(f"[GITHUB API] Error GitHub accessing repo's contribur info: {e}")
             return jsonify({
                 "error": errorMessage,
                 "status": errorCode
@@ -174,7 +174,6 @@ def getRepoContributors_Predicts(owner, repo, GITHUB_API_TOKEN, GOOGLE_API_KEY):
                 ############ MODULO USERNAME ############
                 #########################################
                 username = user['login']
-                print('Prediction by username of ', user['login'])
                 usernamePredict = {}
                 response = predictFromUsername(username)
 
@@ -194,18 +193,13 @@ def getRepoContributors_Predicts(owner, repo, GITHUB_API_TOKEN, GOOGLE_API_KEY):
                 ############ MODULO LOCATION ############
                 #########################################
                 locationPredict = None
-                if (user['location'] is not None and not isinstance(locationPredict, dict)):
-                    print('Search location ISO of  ', user['login'])
-                    locationPredict = predictFromLocation(user['location'])
-                else:
-                    # If an error occured
-                    locationPredict = None
+                locationPredict = predictFromLocation(user['location'], user['login'])
+                
 
                 #########################################
                 ############# MODULO COMMIT #############
                 #########################################
-                # Search 3 commits of contributor
-                print('Searching commits of ', user['login'])
+                # Search n commits of contributor and make prediction 
                 commitsPredict = predictFromCommits(user['login'], owner, repo, 3, GITHUB_API_TOKEN, GOOGLE_API_KEY)   
 
                 if(isinstance(commitsPredict, dict) and 'error' in commitsPredict):
@@ -219,20 +213,14 @@ def getRepoContributors_Predicts(owner, repo, GITHUB_API_TOKEN, GOOGLE_API_KEY):
                 if(isinstance(namePredict, dict) and 'error' in namePredict):
                     # If an error occured
                     namePredict = None
-
-
-                
-
-                
-
-                
+              
                 if(usernamePredict is not None):
                     try:
                         usernamePredictJson = json.loads(usernamePredict)
                     except json.decoder.JSONDecodeError:
                         usernamePredictJson = None
                         print(f"[USERNAME PREDICT] Error decoding JSON for value: {usernamePredict}")
-                    if (usernamePredict is not None and 'isoPredicted' in usernamePredictJson):
+                    if (usernamePredictJson is not None and 'isoPredicted' in usernamePredictJson):
                             usernameIso = usernamePredictJson['isoPredicted']
                     else:
                         usernameIso = None
@@ -344,7 +332,7 @@ def getRepoContributors_Predicts(owner, repo, GITHUB_API_TOKEN, GOOGLE_API_KEY):
         # print('contributorsObj:', contributorsObj)
         return contributorsObj
     except Exception as e:
-        print(f"Error during final jsonify: {e}")
+        print(f"[GENERAL ERROR] Error during final jsonify: {e}")
         return jsonify({
             "error": str(e),
             "status": "403"

@@ -1,4 +1,4 @@
-import { Alert, Card, CardContent, CardHeader, Typography } from '@mui/material'
+import { Alert, Card } from '@mui/material'
 import React from 'react'
 
 const ErrorInfo = ({ error }) => {

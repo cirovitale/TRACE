@@ -1,18 +1,11 @@
-import React, { useEffect, useState, CSSProperties } from 'react'
-import {
-	TextField,
-	Button,
-	Container,
-	AppBar,
-	Toolbar,
-	Typography,
-} from '@mui/material'
+import React, { useEffect, useState } from 'react'
+import { TextField, Button, Container, Typography } from '@mui/material'
 import '../App.css'
 import DeveloperList from './DeveloperList'
 import RepositoryInfo from './RepositoryInfo'
 import DeveloperDialog from './DeveloperDialog'
 import ErrorInfo from './ErrorInfo'
-import HashLoader from 'react-spinners/HashLoader'
+// import HashLoader from 'react-spinners/HashLoader'
 
 function Body({ loader }) {
 	const [repositoryUrl, setRepositoryUrl] = useState('')
@@ -22,7 +15,6 @@ function Body({ loader }) {
 	const [error, setError] = useState(undefined)
 	const [repo, setRepo] = useState({})
 	const [dispersion, setDispersion] = useState({})
-	const [shannonIndex, setShannonIndex] = useState(0)
 	const [chartData, setChartData] = useState({})
 	const [processing, setProcessing] = useState(false)
 	const [alert, setAlert] = useState(false)
@@ -37,12 +29,6 @@ function Body({ loader }) {
 		setProcessing(false)
 		setRepo({})
 	}, [])
-
-	const override = {
-		margin: '0 auto',
-		// marginTop: '100',
-		// color: '#ed6c02',
-	}
 
 	const isValidGitHubRepoFormat = (url) => {
 		// Input Format:   <<  OWNER/NAME  >>

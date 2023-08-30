@@ -19,6 +19,7 @@ def detectUsernameCountryOpenAI(username, results):
         results['error'] = str(e)
 
 def predictFromUsername(username):
+    print('Prediction from username of ', username + '...')
     results = {}
     # Setup thread call and start it
     timeout_seconds = 15

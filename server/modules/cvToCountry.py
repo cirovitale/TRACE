@@ -17,7 +17,7 @@ def predictFromCV(url, login):
     url = clearUrl(url)
     if url is None:
         return None
-    print('Searching pdfs in ', url, ' website of ', login)
+    print('Searching pdfs in ', url, ' website of ', login + '...')
     try:
         response = requests.get(url)
     except Exception as e:

@@ -25,7 +25,7 @@ def getCommits(username, owner, repo, perPage, GITHUB_API_TOKEN):
         errorCode = errorFullMessage.split(" ")[0]
         errorMessage = " ".join(errorFullMessage.split(" ")[1:])
 
-        print(f"Error GitHub accessing repo's commits: {e}")
+        print(f"[GITHUB API] Error GitHub accessing repo's commits: {e}")
         return jsonify({
             "error": errorMessage,
             "status": errorCode
@@ -36,13 +36,14 @@ def getCommits(username, owner, repo, perPage, GITHUB_API_TOKEN):
         errorCode = errorFullMessage.split(" ")[0]
         errorMessage = " ".join(errorFullMessage.split(" ")[1:])
 
-        print(f"Error GitHub accessing repo's commits: {e}")
+        print(f"[GITHUB API] Error GitHub accessing repo's commits: {e}")
         return jsonify({
             "error": errorMessage,
             "status": errorCode
         }, errorCode)
 
 def predictFromCommits(username, owner, repo, perPage, GITHUB_API_TOKEN, GOOGLE_API_KEY):
+    print('Searching commits of ', username + '...')
     commits = getCommits(username, owner, repo, perPage, GITHUB_API_TOKEN)
     if commits is None:
         return
@@ -103,8 +104,10 @@ def detectLanguageFromCommitGoogle(text, GOOGLE_API_KEY):
 
         return result["language"]
     except requests.RequestException as e:
+        print(f"[GOOGLE CLOUD API] {str(e)}")
         return jsonify({"error": str(e), "status": "500"}), 500
 
     except Exception as e:
         # Gestisci altri errori imprevisti
+        print(f"[GOOGLE CLOUD API] {str(e)}")
         return jsonify({"error": "Unknown error: {e}", "status": "500"}), 500

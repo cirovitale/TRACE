@@ -3,8 +3,14 @@ from flask import jsonify
 
 geolocator = Nominatim(user_agent="TRACE")
 
-def predictFromLocation(location):    
+def predictFromLocation(location, username):    
     # Retrieve Location object from location github info
+
+    if (location is not None and not isinstance(location, dict)):
+        print('Search location ISO of  ', username + '...')
+    else:
+        return None
+
     try:
         locationCoded = geolocator.geocode(location, addressdetails=True)
         

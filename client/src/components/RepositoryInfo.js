@@ -5,8 +5,6 @@ import {
 	CardContent,
 	Typography,
 	Grid,
-	Link,
-	Avatar,
 	Alert,
 } from '@mui/material'
 import { Chart } from 'react-google-charts'
