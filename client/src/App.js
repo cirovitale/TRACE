@@ -18,8 +18,8 @@ import Body from './components/Body'
 function App() {
 	return (
 		<Container>
-			<Header logo="logo.jpg" name="TRACE" />
-			<Body />
+			<Header logo="logo.png" name="" />
+			<Body loader="img/loader.gif" />
 		</Container>
 	)
 }

@@ -13,9 +13,8 @@ import RepositoryInfo from './RepositoryInfo'
 import DeveloperDialog from './DeveloperDialog'
 import ErrorInfo from './ErrorInfo'
 import HashLoader from 'react-spinners/HashLoader'
-// BeatLoader ClimbingBoxLoader ClockLoader GridLoader HashLoader PulseLoader RingLoader ScaleLoader
 
-function Body() {
+function Body({ loader }) {
 	const [repositoryUrl, setRepositoryUrl] = useState('')
 	const [developers, setDevelopers] = useState([])
 	const [selectedDeveloper, setSelectedDeveloper] = useState(null)
@@ -49,6 +48,25 @@ function Body() {
 		// Input Format:   <<  OWNER/NAME  >>
 		const pattern = /^[^\/]+\/[^\/]+$/
 		return pattern.test(url)
+	}
+
+	const getErrorFetched = (e) => {
+		if (e.message.includes('HTTP status:')) {
+			// HTTP error
+			const status = parseInt(e.message.split(':')[1].trim())
+			const errorFetched = {
+				status: status,
+				error: `HTTP error with status code ${status}`,
+			}
+			return errorFetched
+		} else {
+			// Other error
+			const errorFetched = {
+				status: 500,
+				error: e.message,
+			}
+			return errorFetched
+		}
 	}
 
 	const handleRepositorySubmit = () => {
@@ -145,9 +163,25 @@ function Body() {
 						}
 						setProcessing(false)
 					})
-					.catch((e) => {})
+					.catch((e) => {
+						const errorFetched = getErrorFetched(e)
+
+						setDevelopers([])
+						setDispersion({})
+						setAlert(false)
+						setProcessing(false)
+						setError(errorFetched)
+					})
 			})
-			.catch((e) => {})
+			.catch((e) => {
+				const errorFetched = getErrorFetched(e)
+
+				setDevelopers([])
+				setDispersion({})
+				setAlert(false)
+				setProcessing(false)
+				setError(errorFetched)
+			})
 	}
 
 	const handleDeveloperClick = (developer) => {
@@ -171,25 +205,27 @@ function Body() {
 					onChange={(e) => setRepositoryUrl(e.target.value)}
 					error={!!error}
 					helperText={error?.error}
+					fullWidth
 				/>
 				<Button
 					disabled={processing}
 					variant="contained"
-					color="warning"
 					onClick={handleRepositorySubmit}
+					fullWidth
 				>
 					Submit
 				</Button>
 			</div>
-			<div style={{ marginTop: 50 }}>
-				<HashLoader
-					color="#ed6c02"
+			<div style={{ marginTop: 50 }} className="loader-section">
+				{/* <HashLoader
+					color="#671912"
 					loading={processing}
 					cssOverride={override}
 					size={150}
 					aria-label="Loading Spinner"
 					data-testid="loader"
-				/>
+				/> */}
+				{processing && <img className="loader" src={loader}></img>}
 			</div>
 
 			{error && (

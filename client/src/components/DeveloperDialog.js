@@ -97,7 +97,13 @@ function DeveloperDialog({ open, developer, onClose }) {
 											Blog: {developer.blog || 'N/A'}
 										</Typography>
 										<Typography variant="h6">
-											URL: {developer.html_url}
+											URL:{' '}
+											<a
+												href={developer.html_url}
+												target="_blank"
+											>
+												{developer.html_url}
+											</a>
 										</Typography>
 										<Typography variant="h6">
 											Twitter:{' '}
@@ -131,7 +137,7 @@ function DeveloperDialog({ open, developer, onClose }) {
 								</Typography>
 								<hr />
 								<Typography variant="h6">
-									USERNAME
+									USERNAME-COUNTRY
 									<Tooltip
 										title={
 											(developer.prediction.username &&
@@ -159,7 +165,13 @@ function DeveloperDialog({ open, developer, onClose }) {
 										'N/A'}
 								</Typography>
 								<Typography variant="h6">
-									NAME-COUNTRY: N/A
+									NAME-COUNTRY:{' '}
+									{(developer.prediction.name &&
+										developer.prediction.name.toUpperCase() !=
+											'NULL' &&
+										developer.prediction.name != '' &&
+										developer.prediction.name) ||
+										'N/A'}
 								</Typography>
 								<Typography variant="h6">
 									CV-COUNTRY
@@ -189,10 +201,13 @@ function DeveloperDialog({ open, developer, onClose }) {
 													</IconButton>
 												</Tooltip>
 												:{' '}
-												{
+												{(JSON.parse(
+													pdf.isoPredicted
+												).isoPredicted.toUpperCase() !=
+													'NULL' &&
 													JSON.parse(pdf.isoPredicted)
-														.isoPredicted
-												}
+														.isoPredicted) ||
+													'N/A'}
 											</>
 										))) ||
 										': N/A'}
@@ -229,7 +244,7 @@ function DeveloperDialog({ open, developer, onClose }) {
 										'N/A'}
 								</Typography>
 								<Typography variant="h6">
-									LOCATION
+									LOCATION-COUNTRY
 									<Tooltip
 										title={developer.location || 'N/A'}
 									>

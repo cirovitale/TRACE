@@ -17,10 +17,19 @@
 	white-space: nowrap;
 }
 
-.input-section .MuiButton-root,
 .input-section .MuiInputBase-root {
-	height: 56px;
-	width: 300px;
+	height: 55px;
+}
+
+.input-section .MuiButton-root {
+	height: 55px;
+	background-color: #671912;
+}
+
+.input-section .MuiButton-root:disabled,
+.input-section .MuiButton-root:hover {
+	background-color: #8d534d;
+	color: #ffffff;
 }
 
 .dev-predict-result {
@@ -28,10 +37,20 @@
 	margin-bottom: 32px;
 }
 
-/* Sticky header */
 .appBar {
-	position: sticky;
-	height: 200px;
+	height: 225px;
+}
+
+.loader-section {
+	display: flex;
+	justify-content: center;
+}
+
+.loader {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 150px;
 }
 
 .toolbar {
@@ -45,7 +64,7 @@
 }
 
 .logo {
-	height: 70%;
+	height: 80%;
 	margin-right: 10px;
 }
 
