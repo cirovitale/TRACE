@@ -124,7 +124,7 @@ Per maggiori approfondimenti si consiglia la lettura della <a href="https://gith
 - directory `thesis`: Tesi di Laurea.
 
 ## Requisiti di Sistema
-- **Memoria**: minimo di 16 GB RAM per supportare il caricamento in memoria del modello di ML.
+- **Memoria**: minimo 16 GB di RAM per supportare il caricamento in memoria del modello di ML.
 - **Connessione Internet**: necessaria per le chiamate API. 
 
 ## Installazione
