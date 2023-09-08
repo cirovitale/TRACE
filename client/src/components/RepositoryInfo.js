@@ -53,6 +53,9 @@ function RepositoryInfo({ repo, dispersion, chartData, alert, readme }) {
 					License: {(repo.license && repo.license.name) || 'N/A'}{' '}
 				</Typography>
 				<Typography>
+					Forks Count: {repo.forks_count && repo.forks_count}{' '}
+				</Typography>
+				<Typography>
 					Latest Update:{' '}
 					{moment(repo.updated_at).format('YYYY-MM-DD HH:mm:ss') ||
 						'N/A'}{' '}

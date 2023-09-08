@@ -93,7 +93,18 @@ function DeveloperDialog({ open, developer, onClose }) {
 											{developer.company || 'N/A'}
 										</Typography>
 										<Typography variant="h6">
-											Blog: {developer.blog || 'N/A'}
+											Blog:{' '}
+											{(developer.blog &&
+												developer.blog != '' && (
+													<a
+														href={developer.blog}
+														target="_blank"
+													>
+														{' '}
+														{developer.blog}
+													</a>
+												)) ||
+												'N/A'}
 										</Typography>
 										<Typography variant="h6">
 											URL:{' '}
