@@ -22,7 +22,7 @@ def predictFromLocation(location, username):
                 return countryCode
     except Exception as e:
         # If an error occured during the call
-        print(f"Error geopy: {e}")
+        print(f"[LOCATION PREDICT] Error geopy: {e}")
         return jsonify({
             "error": str(e),
             "status": "403"

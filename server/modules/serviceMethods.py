@@ -10,13 +10,13 @@ from modules.commitsToCountry import predictFromCommits
 from modules.nameToCountry import predictFromName
 
 # WEIGHT of prediction for final resul, from 0.1 to 0.5
-WEIGHT_NAME = 0.4
-WEIGHT_USERNAME = 0.2
-WEIGHT_PDFS = 0.3
-WEIGHT_COMMITS = 0.2
+WEIGHT_NAME = 0.25
+WEIGHT_USERNAME = 0.17
+WEIGHT_PDFS = 0.21
+WEIGHT_COMMITS = 0.16
 # English is international language and commits in english aren't weighted
 WEIGHT_COMMITS_EN = 0
-WEIGHT_LOCATION = 0.2
+WEIGHT_LOCATION = 0.21
 
 # N/A limit percent to alert the noise in the info --- if update NA_LIMIT_PERCENT here, update also in Alert message in front-end (RepositoryInfo.js - MUI Alert Component)
 NA_LIMIT_PERCENT = 0.3
@@ -174,26 +174,26 @@ def getRepoContributors_Predicts(owner, repo, GITHUB_API_TOKEN, GOOGLE_API_KEY):
                 ############ MODULO USERNAME ############
                 #########################################
                 username = user['login']
-                usernamePredict = {}
-                response = predictFromUsername(username)
+                usernamePredict = predictFromUsername(username)
 
                 # Check if response is dict and contains 'error' key
-                if isinstance(response, dict) and 'error' in response:
-                    if response.get('status') == "408":
-                        print("[USERNAME PREDICT] Timeout error: ", response.get('error'))
-                    elif response.get('status') == "403":
-                        print("[USERNAME PREDICT] OpenAI API error: ", response.get('error'))
+                if usernamePredict is not None and isinstance(usernamePredict, dict) and 'error' in usernamePredict:
+                    if usernamePredict.get('status') == "408":
+                        print("[USERNAME PREDICT] Timeout error: ", usernamePredict.get('error'))
+                    elif usernamePredict.get('status') == "403":
+                        print("[USERNAME PREDICT] OpenAI API error: ", usernamePredict.get('error'))
                     else:
-                        print("[USERNAME PREDICT] Unknown error: ", response.get('error'))
+                        print("[USERNAME PREDICT] Unknown error: ", usernamePredict.get('error'))
                     usernamePredict = None
-                else:
-                    usernamePredict = response
 
                 #########################################
                 ############ MODULO LOCATION ############
                 #########################################
                 locationPredict = None
                 locationPredict = predictFromLocation(user['location'], user['login'])
+
+                if locationPredict is not None and (isinstance(locationPredict, tuple) or isinstance(locationPredict, dict) or 'error' in locationPredict):
+                    locationPredict = None
                 
 
                 #########################################
@@ -364,7 +364,7 @@ def estimateCountryContributor(nameIso, usernameIso, pdfsIso, commitsIso, locati
         print(f'NAME PREDICTED ({WEIGHT_NAME}): ', nameIso)
 
     ### USERNAME ###
-    print(f'USERNAME PREDICTED ({WEIGHT_LOCATION}): ', usernameIso)
+    print(f'USERNAME PREDICTED ({WEIGHT_USERNAME}): ', usernameIso)
 
     if(usernameIso is not None):
         if(usernameIso in final):

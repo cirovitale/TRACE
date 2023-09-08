@@ -54,7 +54,11 @@ def predictFromCommits(username, owner, repo, perPage, GITHUB_API_TOKEN, GOOGLE_
     # For each commit detect language and count type of language detected, counts EN only if it is the only language detected
     for index, commit in enumerate(commits):
         if(GOOGLE_API_KEY != ""):
-            isoDetected = detectLanguageFromCommitGoogle(commit['commit']['message'], GOOGLE_API_KEY).upper()
+            isoDetected = detectLanguageFromCommitGoogle(commit['commit']['message'], GOOGLE_API_KEY)
+            if (isinstance(isoDetected,tuple)):
+                isoDetected = None
+            else:
+                isoDetected = isoDetected.upper()
         else:
             isoDetected = detect(commit['commit']['message']).upper()
         if(isoDetected == "EN"):
@@ -84,6 +88,7 @@ def predictFromCommits(username, owner, repo, perPage, GITHUB_API_TOKEN, GOOGLE_
 
 def detectLanguageFromCommitGoogle(text, GOOGLE_API_KEY):
     if not text:
+        print("[GOOGLE CLOUD API] Text is required")
         return jsonify({
             "error": "Text is required",
             "status": "403"

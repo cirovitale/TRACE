@@ -28,6 +28,7 @@ def predictFromUsername(username):
     thread.join(timeout=timeout_seconds)
 
     if thread.is_alive():
+        print("[OPENAI API] API call timed out")
         # Timeout handling
         return {
             "error": "API call timed out",
@@ -35,6 +36,7 @@ def predictFromUsername(username):
         }
 
     if 'error' in results:
+        print(f"[OPENAI API] Error: {results['error']}")
         return {
             "error": results['error'],
             "status": "403"
