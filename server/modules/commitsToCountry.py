@@ -1,4 +1,3 @@
-from flask import jsonify
 import requests
 from langdetect import detect
 
@@ -26,7 +25,7 @@ def getCommits(username, owner, repo, perPage, GITHUB_API_TOKEN):
         errorMessage = " ".join(errorFullMessage.split(" ")[1:])
 
         print(f"[GITHUB API] Error GitHub accessing repo's commits: {e}")
-        return jsonify({
+        return ({
             "error": errorMessage,
             "status": errorCode
         }, errorCode)
@@ -37,7 +36,7 @@ def getCommits(username, owner, repo, perPage, GITHUB_API_TOKEN):
         errorMessage = " ".join(errorFullMessage.split(" ")[1:])
 
         print(f"[GITHUB API] Error GitHub accessing repo's commits: {e}")
-        return jsonify({
+        return ({
             "error": errorMessage,
             "status": errorCode
         }, errorCode)
@@ -89,7 +88,7 @@ def predictFromCommits(username, owner, repo, perPage, GITHUB_API_TOKEN, GOOGLE_
 def detectLanguageFromCommitGoogle(text, GOOGLE_API_KEY):
     if not text:
         print("[GOOGLE CLOUD API] Text is required")
-        return jsonify({
+        return ({
             "error": "Text is required",
             "status": "403"
         }), "403" 
@@ -110,9 +109,9 @@ def detectLanguageFromCommitGoogle(text, GOOGLE_API_KEY):
         return result["language"]
     except requests.RequestException as e:
         print(f"[GOOGLE CLOUD API] {str(e)}")
-        return jsonify({"error": str(e), "status": "500"}), 500
+        return ({"error": str(e), "status": "500"}), 500
 
     except Exception as e:
         # Gestisci altri errori imprevisti
         print(f"[GOOGLE CLOUD API] {str(e)}")
-        return jsonify({"error": "Unknown error: {e}", "status": "500"}), 500
+        return ({"error": "Unknown error: {e}", "status": "500"}), 500

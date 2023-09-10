@@ -192,7 +192,7 @@ def getRepoContributors_Predicts(owner, repo, GITHUB_API_TOKEN, GOOGLE_API_KEY):
                 locationPredict = None
                 locationPredict = predictFromLocation(user['location'], user['login'])
 
-                if locationPredict is not None and (isinstance(locationPredict, tuple) or isinstance(locationPredict, dict) or 'error' in locationPredict):
+                if locationPredict is not None and (isinstance(locationPredict, dict) and 'error' in locationPredict):
                     locationPredict = None
                 
 

@@ -106,8 +106,8 @@ def detectCountryFromCV(urlPdf):
     thread.join(timeout=timeout_seconds)
 
     if thread.is_alive():
-        print("[OPENAI API] API call timed out")
         # Timeout handling
+        print("[OPENAI API] API call timed out")
         return {
             "error": "API call timed out",
             "status": "408"

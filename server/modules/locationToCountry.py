@@ -1,5 +1,4 @@
 from geopy.geocoders import Nominatim
-from flask import jsonify
 
 geolocator = Nominatim(user_agent="TRACE")
 
@@ -23,7 +22,7 @@ def predictFromLocation(location, username):
     except Exception as e:
         # If an error occured during the call
         print(f"[LOCATION PREDICT] Error geopy: {e}")
-        return jsonify({
+        return ({
             "error": str(e),
             "status": "403"
         })
