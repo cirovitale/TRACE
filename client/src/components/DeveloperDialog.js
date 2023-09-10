@@ -64,7 +64,7 @@ function DeveloperDialog({ open, developer, onClose }) {
 								<Grid container spacing={2}>
 									<Grid item xs={12} sm={8}>
 										<Typography variant="h5">
-											User's Info
+											User Info
 										</Typography>
 										<hr />
 										<Typography variant="h6">

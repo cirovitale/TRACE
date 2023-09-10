@@ -117,8 +117,6 @@ function Body({ loader }) {
 							return
 						} else {
 							setReadme(data)
-							console.log('************** ' + data)
-							console.log()
 						}
 					})
 					.catch((e) => {})
