@@ -47,6 +47,7 @@ Clone the repository.
     - Create a file called `.env` in the `server` directory.
     - Add the following variables, populating it with the specified credentials:
     `GITHUB_API_TOKEN="" OPENAI_API_KEY="" OPENAI_ORGANISATION_ID="" GOOGLE_API_KEY=""`.
+    It is important to note that entering these configuration credentials is *optional*. However, by entering them all, the tool will be able to operate to its full potential.
 
 3. **Create Virtual Environment `venv`**
     - Navigate to the `server` directory and run:
@@ -141,6 +142,7 @@ Effettuare il clone della repository.
     - Creare un file denominato `.env` nella directory `server`.
     - Aggiungere le seguenti variabili, popolandolo con le credenziali specifiche:
         `GITHUB_API_TOKEN="" OPENAI_API_KEY="" OPENAI_ORGANIZATION_ID="" GOOGLE_API_KEY=""`.
+    È importante notare che l'inserimento di tali credenziali è *facoltativo*. Tuttavia, inserendole tutte, il tool sarà in grado di operare al massimo delle potenzialità.
 
 3. **Creazione Ambiente Virtuale `venv`**
     - Navigare fino alla directory `server` ed eseguire:
