@@ -3,10 +3,16 @@ from langdetect import detect
 
 def getCommits(username, owner, repo, perPage, GITHUB_API_TOKEN):
     url = f"https://api.github.com/repos/{owner}/{repo}/commits?committer={username}&page=1&per_page={perPage}"
-    headers = {
-        "Accept": "application/vnd.github.v3+json",
-        "Authorization": f"token {GITHUB_API_TOKEN}"
-    }
+    headers = {}
+    if(GITHUB_API_TOKEN == ""):
+        headers = {
+            "Accept": "application/vnd.github.v3+json",
+        }
+    else:
+        headers = {
+            "Accept": "application/vnd.github.v3+json",
+            "Authorization": f"token {GITHUB_API_TOKEN}"
+        }
 
     try:
         # Do GET request to GitHub API

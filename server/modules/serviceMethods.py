@@ -31,10 +31,16 @@ NA_LIMIT_PERCENT = 0.3
 ######### get User info call GitHub API #########
 def getUserGIT(username, GITHUB_API_TOKEN):
     url = f"https://api.github.com/users/{username}"
-    headers = {
-        "Accept": "application/vnd.github.v3+json",
-        "Authorization": f"token {GITHUB_API_TOKEN}"
-    }
+    headers = {}
+    if(GITHUB_API_TOKEN == ""):
+        headers = {
+            "Accept": "application/vnd.github.v3+json",
+        }
+    else:
+        headers = {
+            "Accept": "application/vnd.github.v3+json",
+            "Authorization": f"token {GITHUB_API_TOKEN}"
+        }
     
     try:
         # Do GET request to GitHub API
@@ -57,10 +63,16 @@ def getUserGIT(username, GITHUB_API_TOKEN):
 ################ get Readme link ################
 def getRepoReadmeGIT(owner, repo, GITHUB_API_TOKEN):
     url = f"https://api.github.com/repos/{owner}/{repo}/readme"
-    headers = {
-        "Accept": "application/vnd.github.v3+json",
-        "Authorization": f"token {GITHUB_API_TOKEN}"
-    }
+    headers = {}
+    if(GITHUB_API_TOKEN == ""):
+        headers = {
+            "Accept": "application/vnd.github.v3+json",
+        }
+    else:
+        headers = {
+            "Accept": "application/vnd.github.v3+json",
+            "Authorization": f"token {GITHUB_API_TOKEN}"
+        }
     
     try:
         # Do GET request to GitHub API
@@ -88,10 +100,16 @@ def getRepoReadmeGIT(owner, repo, GITHUB_API_TOKEN):
 ############## get Repository info ##############
 def getRepoInfoGIT(owner, repo, GITHUB_API_TOKEN):
     url = f"https://api.github.com/repos/{owner}/{repo}"
-    headers = {
-        "Accept": "application/vnd.github.v3+json",
-        "Authorization": f"token {GITHUB_API_TOKEN}"
-    }
+    headers = {}
+    if(GITHUB_API_TOKEN == ""):
+        headers = {
+            "Accept": "application/vnd.github.v3+json",
+        }
+    else:
+        headers = {
+            "Accept": "application/vnd.github.v3+json",
+            "Authorization": f"token {GITHUB_API_TOKEN}"
+        }
     
     try:
         # Do GET request to GitHub API
@@ -125,10 +143,16 @@ def getRepoContributors_Predicts(owner, repo, GITHUB_API_TOKEN, GOOGLE_API_KEY):
     while flag == True:
         
         url = f"https://api.github.com/repos/{owner}/{repo}/contributors?per_page=100&page={page}"
-        headers = {
-            "Accept": "application/vnd.github.v3+json",
-            "Authorization": f"token {GITHUB_API_TOKEN}",
-        }
+        headers = {}
+        if(GITHUB_API_TOKEN == ""):
+            headers = {
+                "Accept": "application/vnd.github.v3+json",
+            }
+        else:
+            headers = {
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": f"token {GITHUB_API_TOKEN}"
+            }
 
         try:
             # Do GET request to GitHub API
