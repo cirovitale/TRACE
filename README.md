@@ -40,7 +40,7 @@ Clone the repository.
 ### Server Configuration
 
 1. **Download and Configure Assets**
-    - Download the <a href="https://shorturl.at/abuN4" target="_blank">TRACE_ML_ASSETS</a> archive containing the directories, `models` and `vectorizers`.
+    - Download the <a href="tinyurl.com/TRACE-ML-ASSETS" target="_blank">TRACE_ML_ASSETS</a> archive containing the directories, `models` and `vectorizers`.
     - Transfer `models` and `vectorizers` directories to the `server` directory.
 
 2. **Create `.env` file**
@@ -135,7 +135,7 @@ Effettuare il clone della repository.
 ### Configurazione Server
 
 1. **Download e Configurazione Assets**
-    - Scaricare l'archivio <a href="https://shorturl.at/abuN4" target="_blank">TRACE_ML_ASSETS</a> contenente le directory, `models` e `vectorizers`.
+    - Scaricare l'archivio <a href="tinyurl.com/TRACE-ML-ASSETS" target="_blank">TRACE_ML_ASSETS</a> contenente le directory, `models` e `vectorizers`.
     - Trasferire le directory `models` e `vectorizers` nella directory `server`.
 
 2. **Creazione file `.env`**
