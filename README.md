@@ -53,14 +53,18 @@ Clone the repository.
     - Navigate to the `server` directory and run:
     `python -m venv venv`.
 
-4. **Dependencies Installation**
-    - Still in the `server` directory, execute:
+4. **Start the virtual environment `venv`**
+    - Still in the `server` directory, run:
+    `venv\Scripts\activate`.
+
+5. **Dependencies Installation**
+    - Still in the `server` directory, run:
     `pip install -r requirements.txt`.
 
 ### Client Configuration
 
 1. **Dependencies Installation**
-    - Navigate to the `client` directory and execute:
+    - Navigate to the `client` directory and run:
     `npm install`.
 
 2. **Communication Port Configuration**
@@ -73,11 +77,11 @@ Clone the repository.
 ### Server Startup
 
 1. **Start the virtual environment `venv`**
-    - Navigate to the `server` directory and execute:
+    - Navigate to the `server` directory and run:
     `venv\Scripts\activate`.
 
 2. **Start the Flask server**
-    - Still in the `server` directory, execute:
+    - Still in the `server` directory, run:
     `flask run`.
     Make sure the server is running on port `5000`.
     
@@ -147,6 +151,10 @@ Effettuare il clone della repository.
 3. **Creazione Ambiente Virtuale `venv`**
     - Navigare fino alla directory `server` ed eseguire:
     `python -m venv venv`.
+
+1. **Avviare l'ambiente virtuale `venv`**
+    - Sempre nella directory `server`, eseguire:
+    `venv\Scripts\activate`.
 
 4. **Installazione Dipendenze**
     - Sempre nella directory `server`, eseguire:
