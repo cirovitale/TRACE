@@ -116,11 +116,6 @@ function DeveloperDialog({ open, developer, onClose }) {
 											</a>
 										</Typography>
 										<Typography variant="h6">
-											Twitter:{' '}
-											{developer.twitter_username ||
-												'N/A'}
-										</Typography>
-										<Typography variant="h6">
 											Followers: {developer.followers}
 										</Typography>
 										<Typography variant="h6">
